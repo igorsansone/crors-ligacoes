@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path'); // <- ADICIONADO para servir arquivos estáticos
+const path = require('path'); // Para servir arquivos estáticos do frontend
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// >>>>> SERVIR ARQUIVOS ESTÁTICOS DO FRONTEND BUILD <<<<<
+// Servir arquivos estáticos do frontend build (React)
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Troque para sua string do MongoDB Atlas se quiser usar nuvem
@@ -29,7 +29,7 @@ const ligacaoSchema = new mongoose.Schema({
 });
 const Ligacao = mongoose.model('Ligacao', ligacaoSchema);
 
-// Cadastro de ligação
+// Rotas de API
 app.post('/ligacoes', async (req, res) => {
   const total = await Ligacao.countDocuments();
   const ligacao = new Ligacao({ ...req.body, sequencia: total + 1 });
@@ -37,19 +37,16 @@ app.post('/ligacoes', async (req, res) => {
   res.json(ligacao);
 });
 
-// Listagem de ligações
 app.get('/ligacoes', async (req, res) => {
   const ligacoes = await Ligacao.find().sort({ dataHora: 1 });
   res.json(ligacoes);
 });
 
-// Total de atendimentos
 app.get('/ligacoes/total', async (req, res) => {
   const total = await Ligacao.countDocuments();
   res.json({ total });
 });
 
-// Exclusão de ligação por _id
 app.delete('/ligacoes/:id', async (req, res) => {
   try {
     const result = await Ligacao.deleteOne({ _id: req.params.id });
@@ -60,7 +57,7 @@ app.delete('/ligacoes/:id', async (req, res) => {
   }
 });
 
-// >>>>> SERVIR index.html do frontend para qualquer rota não-API <<<<<
+// Rota para servir o frontend React (deve ser a última!)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
