@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path'); // <- ADICIONADO para servir arquivos estáticos
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// >>>>> SERVIR ARQUIVOS ESTÁTICOS DO FRONTEND BUILD <<<<<
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Troque para sua string do MongoDB Atlas se quiser usar nuvem
 mongoose.connect('mongodb://localhost:27017/controle_ligacoes_crors', {
@@ -44,7 +48,7 @@ app.get('/ligacoes/total', async (req, res) => {
   const total = await Ligacao.countDocuments();
   res.json({ total });
 });
-// >>>> ADICIONE ESTE BLOCO <<<<
+
 // Exclusão de ligação por _id
 app.delete('/ligacoes/:id', async (req, res) => {
   try {
@@ -55,9 +59,10 @@ app.delete('/ligacoes/:id', async (req, res) => {
     res.status(500).send('Erro ao excluir ligação');
   }
 });
-// Iniciar servidor
-app.listen(3001, () => {
-  console.log('API rodando na porta 3001');
+
+// >>>>> SERVIR index.html do frontend para qualquer rota não-API <<<<<
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
 
 // Iniciar servidor
